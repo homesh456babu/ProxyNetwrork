@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <thread>
 #include <cstring>
+#include <vector>
 using namespace std;
 void set_timeouts(int fd, int seconds = 10);
 bool recv_until(int fd, std::string& out);

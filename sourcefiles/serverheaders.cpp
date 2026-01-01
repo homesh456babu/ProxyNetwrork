@@ -33,7 +33,7 @@ bool recv_exact(int fd, string &body,string &out,int num){
 bool send_all(int fd, const string& data) {
     size_t total_sent = 0;
     size_t length = data.size();
-
+    cout<<"Sending total "<< length <<" bytes"<<endl;
     while (total_sent < length) {
         ssize_t n = send(fd,
                           data.data() + total_sent,
