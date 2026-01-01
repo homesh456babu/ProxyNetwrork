@@ -3,15 +3,43 @@
 #include "http_parser.h"
 #include "connecting_to_server.h"
 #include "filtering.h"
+#include "logging.h"
 //Global variables
 vector<string> blocked_exact;
 vector<string> blocked_suffix;
 
+atomic<int> total_requests{0};
+atomic<int> active_connections{0};
+atomic<int> blocked_requests{0};
+
+mutex metrics_mutex;
+map<string, int> host_counter;
+
+// for requests per minute
+atomic<long> current_minute{0};
+atomic<int> requests_this_minute{0};
+
+//print metrics on Ctrl+C
+void signal_handler(int signum) {
+    cout << "\n\nCtrl+C received. Printing metrics...\n";
+    print_metrics(total_requests,
+        active_connections,
+        blocked_requests,metrics_mutex,
+        host_counter,
+        current_minute,
+        requests_this_minute);
+}
+
 void handle_client(int client_fd) {
+    total_requests++;
     set_timeouts(client_fd,10);
     HttpRequest req;
     string raw;
+    //getting client ip address for logging
+    string client_ip = get_client_address(client_fd);
+    cout<<"Client connected: "<< client_ip <<endl;
 
+    //receiving the request headers and storing in raw
     if(!recv_until(client_fd,raw)){
         close(client_fd);
         return;
@@ -19,9 +47,17 @@ void handle_client(int client_fd) {
     //cout<<raw<<endl;
     //parsing the headers
     if(!http_parse(raw,req)){
+        cerr << "Failed to parse HTTP request\n";
         close(client_fd);
         return;
     }
+
+    //updating metrics
+    update_metrics(req.host,metrics_mutex,
+        host_counter,
+        current_minute,
+        requests_this_minute);
+
     string body;
     //getting the body
     size_t header_end = raw.find("\r\n\r\n");
@@ -30,6 +66,7 @@ void handle_client(int client_fd) {
 
     if (remaining > 0) {
         if (!recv_exact(client_fd,body,raw, remaining)) {
+            cerr << "Failed to receive request body\n";
             close(client_fd);
             return;
         }
@@ -45,6 +82,8 @@ void handle_client(int client_fd) {
     cout << "========================\n";
     //before connecting to server check if host is blocked
     if(is_blocked(req.host,blocked_suffix,blocked_exact)){
+        blocked_requests++;
+        //send 403 forbidden response to client
         string body =
         "The host server is forbidden.\n"
         "Sorry, you can't connect to it.\n";
@@ -56,6 +95,16 @@ void handle_client(int client_fd) {
             "Connection: close\r\n"
             "\r\n" +
             body;
+
+        //logging the blocked request    
+        rotate_log_if_needed();
+        log_request(client_ip,
+            req.host + ":" + to_string(req.port),
+            req.method + " " + req.path + " " + req.version,
+            "BLOCKED",
+            403,
+            0);
+
         if(!send_all(client_fd,resp)){
             cerr <<"Failed to send forbidden response to client\n";
             close(client_fd);
@@ -71,24 +120,33 @@ void handle_client(int client_fd) {
         cerr << "Failed to connect to destination server\n";
         close(client_fd);
         return;
-    }
+    }  
+
+    //sending the raw request to the server
     if(!send_all(server_fd,raw)){
         cerr <<"Failed to send all the data to dest.server\n";
         close(server_fd);
         close(client_fd);
         return;
     }
-
+    //logging the forwarded request
+    rotate_log_if_needed();
+    log_request(client_ip,
+        req.host + ":" + to_string(req.port),
+        req.method + " " + req.path + " " + req.version,
+        "FORWARDED",
+        200,
+        raw.size());
     //recieving information from the server and forwarding it to client
     relay_response(server_fd, client_fd);
     close(server_fd); //closing the server
     
-
     cout<<"Done"<<endl;
     close(client_fd);
 }
 
 int main(int argc, char* argv[]) {
+    signal(SIGINT, signal_handler);
     const char* bind_ip = "0.0.0.0";  // configurable
     int port = 8000;                  // configurable
 

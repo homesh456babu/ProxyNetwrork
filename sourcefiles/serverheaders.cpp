@@ -1,4 +1,19 @@
 #include "serverheaders.h"
+
+string get_client_address(int client_fd) {
+    sockaddr_in addr{};
+    socklen_t len = sizeof(addr);
+
+    if (getpeername(client_fd, (sockaddr*)&addr, &len) == -1) {
+        return "unknown";
+    }
+
+    string ip = inet_ntoa(addr.sin_addr);
+    int port = ntohs(addr.sin_port);
+
+    return ip + ":" + to_string(port);
+}
+
 void set_timeouts(int fd, int seconds) {
     timeval tv{};
     tv.tv_sec = seconds;

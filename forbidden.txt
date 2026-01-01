@@ -1,4 +1,3 @@
-
 example.com
 google.com
 forbidden.com
