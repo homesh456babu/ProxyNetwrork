@@ -1,5 +1,4 @@
-example.com
-google.com
+
 forbidden.com
 192.0.2.5
 
