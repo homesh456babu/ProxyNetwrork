@@ -63,7 +63,7 @@ ProxyNetwork/
 - Does not inspect or modify encrypted TLS traffic
   
 ## Domain and IP blocking
-- Uses a simple text file to define blocked domains and IP addresses
+- Uses a simple text file `forbidden.txt` to define blocked domains and IP addresses
   
 - Normalizes hostnames before matching (lowercase, trimmed)
   
@@ -80,10 +80,15 @@ ProxyNetwork/
   
 - Spawns a new thread for each incoming client connection
   
-## Request logging
+## Logging and Metrics
 
+- Logs timestamp, client address, destination host, request line, action, status code, and transferred size
   
-  ## Runtime metrics (total requests, blocked requests, top hosts)
+- Keeps log files bounded using a simple rotation strategy
+  
+- Maintains runtime metrics such as request count and top requested hosts
+
+
 
 
 
