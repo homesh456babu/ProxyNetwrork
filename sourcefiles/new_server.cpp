@@ -30,6 +30,7 @@ void signal_handler(int signum) {
         host_counter,
         current_minute,
         requests_this_minute);
+    exit(0);
 }
 
 void handle_client(int client_fd) {
@@ -99,11 +100,11 @@ void handle_client(int client_fd) {
             host_counter,
             current_minute,
             requests_this_minute);
-        cout << "==== PARSED REQUEST ====\n";
-        cout << "Method  : " << req.method << "\n";
-        cout << "Host    : " << req.host << "\n";
-        cout << "Port    : " << req.port << "\n";
-        cout << "========================\n";
+        // cout << "==== PARSED REQUEST ====\n";
+        // cout << "Method  : " << req.method << "\n";
+        // cout << "Host    : " << req.host << "\n";
+        // cout << "Port    : " << req.port << "\n";
+        // cout << "========================\n";
         //before connecting to server check if host is blocked
         if(is_blocked(req.host,blocked_suffix,blocked_exact)){
             blocked_requests++;
@@ -188,14 +189,14 @@ void handle_client(int client_fd) {
         }
     }
     req.body = body;
-    cout << "==== PARSED REQUEST ====\n";
-    cout << "Method  : " << req.method << "\n";
-    cout << "Target  : " << req.path << "\n";
-    cout << "Version : " << req.version << "\n";
-    cout << "Host    : " << req.host << "\n";
-    cout << "Length  : " << req.content_length << "\n";
-    cout << "Body    : " << req.body << "\n";
-    cout << "========================\n";
+    // cout << "==== PARSED REQUEST ====\n";
+    // cout << "Method  : " << req.method << "\n";
+    // cout << "Target  : " << req.path << "\n";
+    // cout << "Version : " << req.version << "\n";
+    // cout << "Host    : " << req.host << "\n";
+    // cout << "Length  : " << req.content_length << "\n";
+    // cout << "Body    : " << req.body << "\n";
+    // cout << "========================\n";
     //before connecting to server check if host is blocked
     if(is_blocked(req.host,blocked_suffix,blocked_exact)){
         blocked_requests++;
@@ -258,7 +259,7 @@ void handle_client(int client_fd) {
     relay_response(server_fd, client_fd);
     close(server_fd); //closing the server
     
-    cout<<"Done"<<endl;
+    //cout<<"Done"<<endl;
     close(client_fd);
 }
 

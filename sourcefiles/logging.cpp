@@ -1,6 +1,7 @@
 #include "serverheaders.h"
 #include "logging.h"
 #include <iostream>
+#include <algorithm>
 using namespace std;
 
 mutex log_mutex;
@@ -20,11 +21,14 @@ void print_metrics(atomic<int> &total_requests,
     cout << "\nTop requested hosts:\n";
     {
         lock_guard<mutex> lock(metrics_mutex);
+        vector<pair<string, int>> host_vec(host_counter.begin(), host_counter.end());
+        sort(host_vec.begin(), host_vec.end(), [](const auto& a, const auto& b) {
+            return b.second < a.second;
+        });
         int i = 0;
-        for (const auto& p : host_counter) {
-            i++;
-            if(i>4) break;
-            cout << "  " << p.first << " -> " << p.second << endl;
+        for (const auto& pair : host_vec) {
+            if (i++ >= 3) break;
+            cout << "  " << pair.first << " : " << pair.second << endl;
         }
     }
     cout << "===========================\n";
