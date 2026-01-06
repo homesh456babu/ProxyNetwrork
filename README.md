@@ -1,6 +1,6 @@
 ## Overview
 * This project develops a custom `HTTP` and `HTTPS` proxy server using C++ and low-level TCP socket programming. The proxy is capable of handling regular HTTP requests as well as secure HTTPS connections by implementing the CONNECT tunneling mechanism.
-* The project is designed to demonstrate core concepts of **low-level network programming, multi-threaded concurrency, request parsing, caching, logging.**
+* The project is designed to demonstrate core concepts of **low-level network programming, multi-threaded concurrency, request parsing, logging.**
 * The proxy acts as an intermediary between clients and remote servers:
 
     * For **HTTP traffic**, it parses incoming requests, forwards them to destination servers, optionally caches responses, and logs request details.
@@ -88,8 +88,56 @@ ProxyNetwork/
   
 - Maintains runtime metrics such as request count and top requested hosts
 
+## Build Instructions
 
+## Requirements
 
+- Linux operating system
+ 
+- g++ compiler (C++17 or later)
+  
+- POSIX socket support
+## Build Using Makefile
+``` text
+make
+ ```
+## Run
+``` text
+make run
+```
+## Stopping the Server
 
+To terminate the proxy server and display runtime metrics, press `Ctrl + C` in the terminal.
+
+## Testing
+### HTTP Testing with curl
+``` text
+curl -x http://127.0.0.1:8080 http://example.com
+```
+### HTTPS Testing (CONNECT)
+```text
+curl -v -x http://127.0.0.1:8080 https://www.google.com
+```
+### Concurrent Request Testing
+```text
+ab -n 100 -c 10 -X 127.0.0.1:8080 http://example.com/
+```
+### Blocking Configuration
+Edit `forbidden.txt` (project root):
+```text
+youtube.com
+forbidden.com
+```
+```text
+make run
+curl -x http://127.0.0.1:8080 http://forbidden.com
+```
+## Logging
+All proxy activity is recorded in a log file named `proxy.log`, which is created in the project root directory when the server is running.
+To view the entire log file:
+``` text
+cat proxy.log
+```
+Each log entry includes request and response details such as timestamps, client address, destination host, request method, status code, and data transferred.
 
 
