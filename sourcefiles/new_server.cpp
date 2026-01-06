@@ -266,7 +266,7 @@ void handle_client(int client_fd) {
 int main(int argc, char* argv[]) {
     signal(SIGINT, signal_handler);
     const char* bind_ip = "0.0.0.0";  // configurable
-    int port = 8000;                  // configurable
+    int port = 8080;                  // configurable
 
     // Create socket
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
