@@ -12,6 +12,8 @@
 
 ```text
 ProxyNetwork/
+├── docs/
+|   └── design.md
 ├── sourcefiles/
 │   ├── new_server.cpp
 │   ├── connecting_to_server.cpp
