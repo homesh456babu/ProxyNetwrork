@@ -91,12 +91,12 @@
 - No support for chunked transfer encoding parsing.
  
 - HTTPS traffic is tunneled but not inspected.
- 
-- Caching is limited to HTTP GET requests and stored only in memory.
   
 - Thread-per-connection model does not scale efficiently for very high loads.
 
 - IPv4 only.
+  
+- No response caching is implemented
 
 ## Security Considerations
 
@@ -109,3 +109,4 @@
 - No authentication or access control is implemented.
   
 - The proxy should not be exposed directly to untrusted networks.
+
